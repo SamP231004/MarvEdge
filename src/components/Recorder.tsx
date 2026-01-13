@@ -8,6 +8,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Loader2, Mic, Monitor, Scissors } from "lucide-react";
 
+import { UploadButton } from "@uploadthing/react";
+import type { OurFileRouter } from "@/app/api/uploadthing/core";
+
 export default function Recorder() {
   const [isRecording, setIsRecording] = useState(false);
   const [recordedBlob, setRecordedBlob] = useState<Blob | null>(null);
@@ -116,24 +119,8 @@ export default function Recorder() {
 
               <Trimmer
                 blob={recordedBlob}
-                onTrimmed={async (trimmedBlob) => {
-                  const formData = new FormData();
-                  formData.append('video', trimmedBlob, 'video.webm');
-
-                  const response = await fetch('/api/upload', {
-                    method: 'POST',
-                    body: formData,
-                  });
-
-                  const result = await response.json();
-                  if (result.shareLink) {
-                    alert(`Uploaded! Share link: ${window.location.origin}${result.shareLink}`);
-                  } else {
-                    alert('Upload failed');
-                  }
-                }}
+                onTrimmed={() => { }}
               />
-
             </div>
           )}
         </CardContent>
@@ -142,11 +129,12 @@ export default function Recorder() {
   );
 }
 
-function Trimmer({ blob, onTrimmed }: { blob: Blob; onTrimmed: (b: Blob) => void }) {
+function Trimmer({ blob, onTrimmed }: { blob: Blob; onTrimmed: () => void }) {
   const [startTime, setStartTime] = useState(0);
   const [endTime, setEndTime] = useState(-1);
   const [duration, setDuration] = useState(0);
   const [isTrimming, setIsTrimming] = useState(false);
+  const [trimmedBlob, setTrimmedBlob] = useState<Blob | null>(null);
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const ffmpegRef = useRef<FFmpeg | null>(null);
@@ -164,8 +152,8 @@ function Trimmer({ blob, onTrimmed }: { blob: Blob; onTrimmed: (b: Blob) => void
     const ffmpeg = new FFmpeg();
     ffmpegRef.current = ffmpeg;
     await ffmpeg.load({
-      coreURL: 'https://unpkg.com/@ffmpeg/core@0.12.10/dist/umd/ffmpeg-core.js',
-      wasmURL: 'https://unpkg.com/@ffmpeg/core@0.12.10/dist/umd/ffmpeg-core.wasm',
+      coreURL: "https://unpkg.com/@ffmpeg/core@0.12.10/dist/umd/ffmpeg-core.js",
+      wasmURL: "https://unpkg.com/@ffmpeg/core@0.12.10/dist/umd/ffmpeg-core.wasm",
     });
     return ffmpeg;
   };
@@ -174,29 +162,56 @@ function Trimmer({ blob, onTrimmed }: { blob: Blob; onTrimmed: (b: Blob) => void
     setIsTrimming(true);
     try {
       const ffmpeg = await loadFFmpeg();
-      await ffmpeg.writeFile('input.webm', await fetchFile(blob));
+      await ffmpeg.writeFile("input.webm", await fetchFile(blob));
+
       await ffmpeg.exec([
-        '-i', 'input.webm',
-        '-ss', startTime.toString(),
-        '-t', (endTime - startTime).toString(),
-        '-c', 'copy',
-        'output.webm',
+        "-i", "input.webm",
+        "-ss", startTime.toString(),
+        "-t", (endTime - startTime).toString(),
+        "-c", "copy",
+        "output.webm"
       ]);
 
-      const data = await ffmpeg.readFile('output.webm');
-      const trimmedBlob = new Blob([data as any], { type: 'video/webm' });
+      const data = await ffmpeg.readFile("output.webm");
+      const trimmedBlob = new Blob([data as any], { type: "video/webm" });
 
-      onTrimmed(trimmedBlob);
+      // Convert blob → File so we can upload it
+      const trimmedFile = new File([trimmedBlob], "trimmed-video.webm", {
+        type: "video/webm",
+      });
+
+      // Upload via server endpoint
+      const formData = new FormData();
+      formData.append('video', trimmedFile);
+
+      const response = await fetch("/api/trim-upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      const dataJson = await response.json();
+
+      if (!response.ok) {
+        alert(`Upload failed: ${dataJson.error || 'Unknown error'}`);
+        return;
+      }
+
+      if (dataJson.shareLink) {
+        window.location.href = dataJson.shareLink;
+      } else {
+        alert("Error creating share link");
+      }
     } finally {
       setIsTrimming(false);
     }
   };
 
+
   return (
     <div className="space-y-6 text-aquamarine">
 
-      <h3 className="text-xl font-semibold text-center flex items-center justify-center gap-2 text-aquamarine">
-        <Scissors className="w-5 h-5 text-aquamarine" /> Trim Video
+      <h3 className="text-xl font-semibold text-center flex items-center justify-center gap-2">
+        <Scissors className="w-5 h-5" /> Trim Video
       </h3>
 
       <video
@@ -208,43 +223,54 @@ function Trimmer({ blob, onTrimmed }: { blob: Blob; onTrimmed: (b: Blob) => void
 
       <div className="flex justify-center gap-6">
         <div>
-          <label className="text-sm text-aquamarine mb-1">Start (s)</label>
+          <label className="text-sm">Start (s)</label>
           <Input
             type="number"
             value={startTime}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setStartTime(Number(e.target.value))}
             min={0}
             max={duration}
             step="0.1"
-            className="px-3 py-2 bg-[#0a192f] border border-[#64ffda] rounded-lg text-aquamarine"
+            onChange={(e) => setStartTime(Number(e.target.value))}
+            className="px-3 py-2 bg-[#0a192f] border border-[#64ffda] text-aquamarine rounded-lg"
           />
         </div>
 
         <div>
-          <label className="text-sm text-aquamarine mb-1">End (s)</label>
+          <label className="text-sm">End (s)</label>
           <Input
             type="number"
             value={endTime === -1 ? "" : endTime}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEndTime(Number(e.target.value))}
             min={0}
             max={duration}
             step="0.1"
-            className="px-3 py-2 bg-[#0a192f] border border-[#64ffda] rounded-lg text-aquamarine"
+            onChange={(e) => setEndTime(Number(e.target.value))}
+            className="px-3 py-2 bg-[#0a192f] border border-[#64ffda] text-aquamarine rounded-lg"
           />
         </div>
       </div>
 
-      <div className="text-center flex justify-center text-black">
+      <div className="text-center text-black">
         <Button
           onClick={trimVideo}
           disabled={isTrimming}
-          className="px-8 py-4 rounded-lg border bg-white border-[#64ffda] text-aquamarine hover:shadow-[0_0_20px_#64ffda] flex items-center gap-2 transition-all disabled:opacity-50"
+          className="px-8 py-4 rounded-lg bg-white text-aquamarine border border-[#64ffda] hover:shadow-[0_0_20px_#64ffda]"
         >
           {isTrimming && <Loader2 className="h-5 w-5 animate-spin" />}
-          Trim and Export
+          Trim Video
         </Button>
       </div>
+
+      {trimmedBlob && (
+        <div className="space-y-4">
+          <h4 className="text-center text-lg">Trimmed Preview</h4>
+
+          <video
+            src={URL.createObjectURL(trimmedBlob)}
+            controls
+            className="w-full rounded-xl border border-[#64ffda] shadow-[0_0_10px_#64ffda]"
+          />
+        </div>
+      )}
     </div>
   );
 }
-
