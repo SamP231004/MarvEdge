@@ -16,6 +16,7 @@
     "@tabler/icons-react": "^3.36.1",
     "@uploadthing/react": "^7.3.3",
     "@uploadthing/shared": "^7.1.10",
+    "@vercel/kv": "^3.0.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^0.562.0",
