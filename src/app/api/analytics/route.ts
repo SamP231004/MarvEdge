@@ -19,14 +19,16 @@ export async function POST(request: NextRequest) {
 
     if (event === 'view') {
       analytics[videoId].views += 1;
-    } else if (event === 'completion') {
+    } 
+    else if (event === 'completion') {
       analytics[videoId].completions += 1;
     }
 
     await fs.writeFile(analyticsPath, JSON.stringify(analytics, null, 2));
 
     return NextResponse.json({ success: true });
-  } catch (error) {
+  } 
+  catch (error) {
     console.error('Analytics error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }

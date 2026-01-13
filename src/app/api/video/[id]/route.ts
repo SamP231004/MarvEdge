@@ -21,7 +21,8 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     const stats = analytics[id] || { views: 0, completions: 0 };
 
     return NextResponse.json({ ...video, ...stats });
-  } catch (error) {
+  } 
+  catch (error) {
     console.error('Error fetching video:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }

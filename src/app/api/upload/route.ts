@@ -32,7 +32,8 @@ export async function POST(request: NextRequest) {
     await fs.writeFile(videosPath, JSON.stringify(videos, null, 2));
 
     return NextResponse.json({ shareLink: `/share/${id}` });
-  } catch (error) {
+  } 
+  catch (error) {
     console.error('Upload error:', error);
     return NextResponse.json({ error: 'Upload failed' }, { status: 500 });
   }

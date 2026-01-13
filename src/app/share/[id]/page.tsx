@@ -9,15 +9,14 @@ export default function SharePage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Fetch video data
     fetch(`/api/video/${id}`)
       .then(res => res.json())
       .then(data => {
         if (data.error) {
           setError(data.error);
-        } else {
+        } 
+        else {
           setVideo(data);
-          // Track view
           fetch('/api/analytics', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -25,21 +24,36 @@ export default function SharePage() {
           });
         }
       })
-      .catch(err => setError('Failed to load video'));
+      .catch(() => setError('Failed to load video'));
   }, [id]);
 
-  if (error) return <div className="p-8">Error: {error}</div>;
-  if (!video) return <div className="p-8">Loading...</div>;
+  if (error)
+    return (
+      <div className="h-screen w-screen flex items-center justify-center bg-[#0a192f] text-red-400 kode-mono text-xl">
+        Error: {error}
+      </div>
+    );
+
+  if (!video)
+    return (
+      <div className="h-screen w-screen flex items-center justify-center bg-[#0a192f] text-aquamarine kode-mono text-xl">
+        Loading...
+      </div>
+    );
 
   return (
-    <div className="min-h-screen p-8">
-      <h1 className="text-2xl font-bold mb-4">{video.title}</h1>
-      <video
-        src={video.file}
-        controls
-        className="w-full max-w-4xl"
-      />
-      <p className="mt-4">Views: {video.views || 0}</p>
+    <div className="h-screen w-screen overflow-hidden flex items-center justify-center p-4 text-white">
+      <div className="w-full max-w-3xl max-h-[90vh] overflow-y-auto border border-[#64ffda] shadow-[0_0_20px_#64ffda] rounded-xl p-6 text-aquamarine kode-mono">
+        <h1 className="text-3xl mb-6 text-center text-aquamarine">{video.title}</h1>
+        <video
+          src={video.file}
+          controls
+          className="w-full rounded-xl border border-black"
+        />
+        <p className="mt-4 text-center text-lg">
+          Views: <span>{video.views || 0}</span>
+        </p>
+      </div>
     </div>
   );
 }
