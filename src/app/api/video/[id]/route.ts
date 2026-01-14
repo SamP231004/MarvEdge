@@ -13,7 +13,7 @@ interface Video {
 }
 
 const isVercel = process.env.VERCEL === '1' || process.env.VERCEL_ENV;
-const useKV = isVercel && process.env.KV_URL; 
+const useKV = isVercel && (process.env.KV_URL || process.env.REDIS_URL); 
 
 async function getVideos(): Promise<Video[]> {
   if (useKV) {

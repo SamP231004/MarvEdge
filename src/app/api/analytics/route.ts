@@ -4,7 +4,7 @@ import path from 'path';
 import { kv } from '@vercel/kv';
 
 const isVercel = process.env.VERCEL === '1' || process.env.VERCEL_ENV;
-const useKV = isVercel && process.env.KV_URL;
+const useKV = isVercel && (process.env.KV_URL || process.env.REDIS_URL);
 
 async function getAnalytics() {
   if (useKV) {
