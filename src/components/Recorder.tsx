@@ -114,7 +114,7 @@ export default function Recorder() {
               <video
                 src={URL.createObjectURL(recordedBlob)}
                 controls
-                className="w-full rounded-xl shadow-[0_0_10px_#64ffda] border border-[#64ffda]"
+                className="w-full rounded-xl border border-black"
               />
 
               <Trimmer
@@ -218,7 +218,7 @@ function Trimmer({ blob, onTrimmed }: { blob: Blob; onTrimmed: () => void }) {
         ref={videoRef}
         src={URL.createObjectURL(blob)}
         onLoadedMetadata={handleLoadedMetadata}
-        className="w-full rounded-xl border border-[#64ffda] shadow-[0_0_10px_#64ffda]"
+        className="w-full rounded-xl border border-black "
       />
 
       <div className="flex justify-center gap-6">

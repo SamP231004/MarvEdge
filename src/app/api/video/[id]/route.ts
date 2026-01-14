@@ -12,24 +12,41 @@ interface Video {
   createdAt: string;
 }
 
-// Check if we're in Vercel environment
 const isVercel = process.env.VERCEL === '1' || process.env.VERCEL_ENV;
-const useKV = isVercel && process.env.KV_URL; // Only use KV if KV_URL is available
+const useKV = isVercel && process.env.KV_URL; 
 
 async function getVideos(): Promise<Video[]> {
   if (useKV) {
-    // Use Vercel KV for persistent storage
     const videos = await kv.get('videos') as Video[];
     return videos || [];
-  } else {
-    // Local development - read from file
+  } 
+  else {
     const videosPath = path.join(process.cwd(), "data", "videos.json");
     try {
       const data = await fs.readFile(videosPath, "utf-8");
       return JSON.parse(data);
-    } catch (error) {
+    } 
+    catch (error) {
       console.log('Could not read videos.json, returning empty array');
       return [];
+    }
+  }
+}
+
+async function getAnalytics(): Promise<Record<string, { views: number; completions: number }>> {
+  if (useKV) {
+    const analytics = await kv.get('analytics') as Record<string, { views: number; completions: number }>;
+    return analytics || {};
+  } 
+  else {
+    const analyticsPath = path.join(process.cwd(), 'data', 'analytics.json');
+    try {
+      const fileContent = await fs.readFile(analyticsPath, 'utf-8');
+      return JSON.parse(fileContent);
+    } 
+    catch (error) {
+      console.log('Could not read analytics.json, starting fresh');
+      return {};
     }
   }
 }
@@ -48,8 +65,18 @@ export async function GET(
       return NextResponse.json({ error: "Video not found" }, { status: 404 });
     }
 
-    return NextResponse.json(video);
-  } catch (error) {
+    const analytics = await getAnalytics();
+    const videoAnalytics = analytics[id] || { views: 0, completions: 0 };
+
+    const videoWithAnalytics = {
+      ...video,
+      views: videoAnalytics.views,
+      completions: videoAnalytics.completions,
+    };
+
+    return NextResponse.json(videoWithAnalytics);
+  } 
+  catch (error) {
     console.error("Error reading video data:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }

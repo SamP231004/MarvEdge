@@ -5,22 +5,21 @@ import path from 'path';
 import { v4 as uuid } from 'uuid';
 import { kv } from '@vercel/kv';
 
-// Check if we're in Vercel environment
 const isVercel = process.env.VERCEL === '1' || process.env.VERCEL_ENV;
-const useKV = isVercel && process.env.KV_URL; // Only use KV if KV_URL is available
+const useKV = isVercel && process.env.KV_URL;
 
 async function getVideos() {
   if (useKV) {
-    // Use Vercel KV for persistent storage
     const videos = await kv.get('videos') as any[];
     return videos || [];
-  } else {
-    // Local development - read from file
+  } 
+  else {
     const videosPath = path.join(process.cwd(), 'data', 'videos.json');
     try {
       const fileContent = await fs.readFile(videosPath, 'utf-8');
       return JSON.parse(fileContent);
-    } catch (error) {
+    } 
+    catch (error) {
       console.log('Could not read videos.json, starting fresh');
       return [];
     }
@@ -29,11 +28,10 @@ async function getVideos() {
 
 async function saveVideos(videos: any[]) {
   if (useKV) {
-    // Use Vercel KV for persistent storage
     await kv.set('videos', videos);
     console.log('Stored videos in Vercel KV');
-  } else {
-    // Local development - write to file
+  } 
+  else {
     const videosPath = path.join(process.cwd(), 'data', 'videos.json');
     await fs.writeFile(videosPath, JSON.stringify(videos, null, 2));
   }
@@ -41,25 +39,35 @@ async function saveVideos(videos: any[]) {
 
 export async function POST(request: NextRequest) {
   try {
+    console.log('Trim upload started');
+
     const formData = await request.formData();
     const file = formData.get('video') as File;
 
     if (!file) {
+      console.error('No video file provided');
       return NextResponse.json({ error: 'No video file provided' }, { status: 400 });
     }
 
-    // Upload to UploadThing
+    console.log('File received:', { name: file.name, size: file.size, type: file.type });
+
+    if (!process.env.UPLOADTHING_SECRET) {
+      console.error('UPLOADTHING_SECRET not configured');
+      return NextResponse.json({ error: 'UploadThing not configured' }, { status: 500 });
+    }
+
     const utapi = new UTApi();
+    console.log('Uploading to UploadThing...');
     const uploadRes = await utapi.uploadFiles(file);
 
     if (!uploadRes.data) {
       console.error('UploadThing upload failed:', uploadRes);
-      return NextResponse.json({ error: 'Upload to UploadThing failed' }, { status: 500 });
+      return NextResponse.json({ error: 'Upload to UploadThing failed', details: uploadRes }, { status: 500 });
     }
 
     const videoUrl = uploadRes.data.ufsUrl;
+    console.log('Upload successful, URL:', videoUrl);
 
-    // Create share entry
     const id = uuid();
     const videos = await getVideos();
 
@@ -72,9 +80,10 @@ export async function POST(request: NextRequest) {
     });
 
     await saveVideos(videos);
+    console.log('Video saved with ID:', id);
 
     return NextResponse.json({ shareLink: `/share/${id}` });
-  } 
+  }
   catch (error) {
     console.error('Trim upload error details:', {
       message: error instanceof Error ? error.message : 'Unknown error',
