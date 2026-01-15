@@ -1,60 +1,51 @@
-# Screen Recording MVP
+# 🎬 MarvEdge - Screen Recording MVP
 
-A Next.js application for browser-based screen recording with trimming, uploading, and sharing capabilities.
+A modern Next.js application for browser-based screen recording with intelligent trimming, seamless uploading, and easy sharing capabilities.
 
-## Features
+**🌐 [Live Demo](https://marv-edge.vercel.app/)**
 
-- Record screen + microphone using MediaRecorder API
-- Trim video start and end times using ffmpeg.wasm
-- Upload trimmed videos to local storage
-- Generate public share links
-- Basic analytics (view counts)
-- Clean UI with Tailwind CSS
+## ✨ Features
 
-## Getting Started
+- 🎥 **Screen Recording** - Capture screen + microphone using MediaRecorder API
+- ✂️ **Video Trimming** - Edit video start and end times with ffmpeg.wasm
+- 📤 **Cloud Upload** - Upload trimmed videos to UploadThing
+- 🔗 **Share Links** - Generate public share links for instant sharing
+- 📊 **Analytics** - Track video view counts
+- 🎨 **Beautiful UI** - Modern interface with Tailwind CSS
+- 🚀 **Deployment Ready** - Optimized for Vercel deployment
 
-First, install dependencies:
+## 📖 Usage
 
-```bash
-npm install
-```
+1. 🎙️ Click **"Start Recording"** to begin screen recording with microphone
+2. ⏹️ Click **"Stop Recording"** when finished capturing
+3. ✏️ Adjust trim start/end times and click **"Trim and Export"**
+4. 📤 The video will be uploaded to the cloud and a shareable link will be provided
+5. 🌍 Share the link with others to view the video publicly
 
-Then, run the development server:
+## 📸 Screenshots
 
-```bash
-npm run dev
-```
+### Landing Page
+![alt text](public/ScreenShots/SS_1.png)
 
-Open [http://localhost:3000](http://localhost:3000) with your browser.
+### Video Trimming Interface
+![alt text](public/ScreenShots/SS_2.png)
 
-## Usage
+### Shareable Video Link
+![alt text](public/ScreenShots/SS_3.png)
 
-1. Click "Start Recording" to begin screen recording with mic.
-2. Click "Stop Recording" when done.
-3. Adjust trim start/end times and click "Trim and Export".
-4. The video will be uploaded and a share link will be provided.
-5. Share the link to view the video publicly.
+## 🛠️ Tech Stack
 
-## Tech Stack
+- **Frontend**: Next.js 16, React 19, TypeScript
+- **Styling**: Tailwind CSS 4
+- **Video Processing**: ffmpeg.wasm for in-browser video trimming
+- **Storage**: UploadThing for cloud file storage
+- **Database**: Vercel KV for Redis-based data persistence
+- **UI Components**: Radix UI, Lucide Icons, Tabler Icons
+- **Deployment**: Vercel with KV storage
 
-- Next.js 16 + TypeScript
-- Tailwind CSS
-- ffmpeg.wasm for video processing
-- File-based storage (mocked)
+## 🌐 Connect With Me
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- 🌟 **Portfolio**: [https://samp231004.github.io/Portfolio/](https://samp231004.github.io/Portfolio/)
+- 💻 **GitHub**: [https://github.com/SamP231004](https://github.com/SamP231004)
+- 💼 **LinkedIn**: [https://www.linkedin.com/in/samp2310](https://www.linkedin.com/in/samp2310)
+- 𝕏 **X (Twitter)**: [https://x.com/Sam231004](https://x.com/Sam231004)

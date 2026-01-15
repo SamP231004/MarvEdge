@@ -51,13 +51,13 @@ export async function POST(request: NextRequest) {
 
     console.log('File received:', { name: file.name, size: file.size, type: file.type });
 
-    if (!process.env.UPLOADTHING_SECRET) {
-      console.error('UPLOADTHING_SECRET not configured');
+    if (!process.env.UPLOADTHING_TOKEN) {
+      console.error('UPLOADTHING_TOKEN not configured');
       return NextResponse.json({ error: 'UploadThing not configured' }, { status: 500 });
     }
 
     const utapi = new UTApi({
-      token: process.env.UPLOADTHING_SECRET,
+      token: process.env.UPLOADTHING_TOKEN,
     });
     console.log('Uploading to UploadThing...');
     const uploadRes = await utapi.uploadFiles(file);
